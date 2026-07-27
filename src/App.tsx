@@ -2,6 +2,7 @@ import { gql, type TypedDocumentNode } from '@apollo/client';
 import { useQuery, useMutation } from '@apollo/client/react';
 import { TemplateCard } from './components/TemplateCard';
 import type { Template } from './types';
+import { SandboxList } from './components/SandboxList';
 
 const GET_TEMPLATES: TypedDocumentNode<{ templates: Template[] }> = gql`
   query GetTemplates {
@@ -41,6 +42,7 @@ function App() {
           }}
         />
       ))}
+      <SandboxList />
     </div>
   );
 }
