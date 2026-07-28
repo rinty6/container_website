@@ -180,10 +180,24 @@ button:focus-visible {
 
 .topbar {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 10px;
   min-height: 98px;
   padding: 22px 0;
   border-bottom: 1px solid var(--border);
+}
+
+.topbar-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.topbar-subtitle {
+  max-width: 640px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .title-group {
@@ -393,7 +407,7 @@ h2 {
 .table-header,
 .row-summary {
   display: grid;
-  grid-template-columns: minmax(290px, 1.6fr) minmax(155px, 0.9fr) minmax(140px, 0.65fr) minmax(115px, 0.6fr) minmax(120px, 0.55fr);
+  grid-template-columns: minmax(290px, 1.6fr) minmax(155px, 0.9fr) minmax(140px, 0.65fr) minmax(115px, 0.6fr);
   align-items: center;
 }
 
@@ -611,13 +625,6 @@ h2 {
   color: var(--muted);
 }
 
-.row-actions-cell {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  justify-content: flex-end;
-}
-
 .text-action,
 .icon-button {
   display: inline-flex;
@@ -757,22 +764,46 @@ h2 {
   background: var(--green);
 }
 
-.destroy-button {
+.details-actions {
   position: absolute;
   right: 22px;
   bottom: 14px;
+  display: flex;
+  gap: 10px;
+}
+
+.logs-button,
+.destroy-button {
   display: inline-flex;
   gap: 8px;
   align-items: center;
   min-height: 39px;
   padding: 0 14px;
-  border: 1px solid #a43f3c;
   border-radius: 5px;
-  background: #1a0f12;
-  color: #ff6d68;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
+}
+
+.logs-button {
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+  color: var(--text);
+}
+
+.logs-button:hover {
+  background: var(--surface-raised);
+}
+
+.logs-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.destroy-button {
+  border: 1px solid #a43f3c;
+  background: #1a0f12;
+  color: #ff6d68;
 }
 
 .destroy-button:hover {
@@ -838,11 +869,6 @@ h2 {
   .table-header,
   .row-summary {
     grid-template-columns: minmax(245px, 1.4fr) minmax(140px, 0.8fr) minmax(115px, 0.55fr) minmax(100px, 0.5fr);
-  }
-
-  .table-header span:last-child,
-  .row-actions-cell {
-    display: none;
   }
 
   .sandbox-details {
@@ -1093,6 +1119,46 @@ h2 {
   font-size: 12.5px;
 }
 
+.logs-view {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #0d0e13;
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.log-line {
+  display: flex;
+  gap: 12px;
+  padding: 2px 0;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+.log-timestamp {
+  flex-shrink: 0;
+  color: var(--muted-2);
+}
+
+.log-message {
+  color: var(--text);
+}
+
+.log-line.severity-error .log-message,
+.log-line.severity-err .log-message {
+  color: var(--red);
+}
+
+.log-line.severity-warn .log-message,
+.log-line.severity-warning .log-message {
+  color: var(--amber);
+}
+
 /* ── Launch button, now living beside the lifetime picker ─────────────────── */
 
 .launch-button {
@@ -1101,9 +1167,9 @@ h2 {
   gap: 8px;
   margin-left: 14px;
   padding: 10px 18px;
-  border: none;
+  border: 1px solid #a087f8;
   border-radius: 9px;
-  background: var(--violet);
+  background: #8267e9;
   color: #fff;
   font-size: 13.5px;
   font-weight: 600;
@@ -1111,7 +1177,10 @@ h2 {
   white-space: nowrap;
 }
 
-.launch-button:hover:not(:disabled) { filter: brightness(1.08); }
+.launch-button:hover:not(:disabled) {
+  background: #9579f4;
+  transform: translateY(-1px);
+}
 .launch-button:disabled { opacity: 0.55; cursor: default; }
 
 /* ── Inline empty state, replacing the old bottom block ───────────────────── */

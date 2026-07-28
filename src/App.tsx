@@ -8,6 +8,7 @@ import { SandboxRow } from './components/SandboxRow';
 import { TemplateIcon } from './components/TemplateIcon';
 import { Sidebar } from './components/Sidebar';
 import { PanelHost } from './components/PanelHost';
+import { SandboxLogsModal } from './components/SandboxLogsModal';
 import { useNow } from './useNow';
 import { formatDateTime } from './format';
 import type { SandboxStatus, PanelId } from './types';
@@ -24,6 +25,7 @@ function App() {
   const [selectedTemplate, setSelectedTemplate] = useState('postgres');
   const [selectedTtl, setSelectedTtl] = useState(60);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [logsSandboxId, setLogsSandboxId] = useState<string | null>(null);
   const [lastSynced, setLastSynced] = useState(() => new Date().toISOString());
   const [activePanel, setActivePanel] = useState<PanelId | null>(null);
 
@@ -46,6 +48,7 @@ function App() {
 
   const sandboxes = data?.sandboxes ?? [];
   const templates = templatesQuery.data?.templates ?? [];
+  const logsSandbox = sandboxes.find((s) => s.id === logsSandboxId) ?? null;
 
   const liveCount = useMemo(
     () => sandboxes.filter((s) => ALIVE.includes(s.status)).length,
@@ -66,32 +69,42 @@ function App() {
 
       <main className="workspace">
         <header className="topbar">
-          <div className="title-group">
-            <h1>Sandbox workbench</h1>
+          <div className="topbar-row">
+            <div className="title-group">
+              <h1>Sandbox workbench</h1>
+              <button
+                className={`sync-indicator ${loading ? 'is-syncing' : ''}`}
+                type="button"
+                onClick={() => refetch()}
+              >
+                <PiArrowsClockwise size={17} />
+                Last synced
+                <span>·</span>
+                {formatDateTime(lastSynced)}
+              </button>
+            </div>
             <button
-              className={`sync-indicator ${loading ? 'is-syncing' : ''}`}
+              className="primary-button"
               type="button"
-              onClick={() => refetch()}
+              onClick={() => setActivePanel('import')}
             >
-              <PiArrowsClockwise size={17} />
-              Last synced
-              <span>·</span>
-              {formatDateTime(lastSynced)}
+              <PiUploadSimple size={21} />
+              Import image
             </button>
           </div>
-          <button
-            className="primary-button"
-            type="button"
-            onClick={() => setActivePanel('import')}
-          >
-            <PiUploadSimple size={21} />
-            Import image
-          </button>
+          <p className="topbar-subtitle">
+            Give it any Docker image and get a running, URL-addressable container in about a
+            minute. After that, it deletes itself when its lifetime runs out, so nothing is left behind
+            to pay for or clean up.
+          </p>
         </header>
 
         <section className="launcher" aria-labelledby="launcher-title">
           <div className="section-heading">
-            <div><h2 id="launcher-title">Ready to launch</h2></div>
+            <div>
+              <h2 id="launcher-title">Ready to launch</h2>
+              <p>Don&apos;t have an image of your own? Pick a preset, set how long it should live, then press Launch.</p>
+            </div>
             <span>{liveCount} live environments</span>
           </div>
 
@@ -160,7 +173,6 @@ function App() {
             <span>Image</span>
             <span>Status</span>
             <span>Time to live</span>
-            <span>Actions</span>
           </div>
 
           <div className="sandbox-list">
@@ -180,6 +192,7 @@ function App() {
                     setExpandedId((current) => (current === sandbox.id ? null : sandbox.id))
                   }
                   onDestroy={(id) => destroySandbox({ variables: { id } })}
+                  onViewLogs={setLogsSandboxId}
                 />
               ))
             )}
@@ -189,6 +202,12 @@ function App() {
 
       {/* One host for every overlay panel; App only tracks which one is open. */}
       <PanelHost panel={activePanel} onClose={() => setActivePanel(null)} />
+      <SandboxLogsModal
+        sandboxId={logsSandboxId}
+        sandboxName={logsSandbox?.name ?? ''}
+        status={logsSandbox?.status ?? null}
+        onClose={() => setLogsSandboxId(null)}
+      />
     </div>
   );
 }

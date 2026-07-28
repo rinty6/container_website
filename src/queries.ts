@@ -3,7 +3,7 @@
 // Co-locating them means the field lists can be compared at a glance and reused via the
 // shared fragment below — rather than being scattered across components and drifting apart.
 import { gql, type TypedDocumentNode } from '@apollo/client';
-import type { Sandbox, Template } from './types';
+import type { Sandbox, SandboxLog, Template } from './types';
 
 // A fragment: one named, reusable field selection. Both mutations and the list query need
 // the exact same Sandbox fields, and writing them out four times invites the copies to
@@ -51,5 +51,21 @@ export const DESTROY_SANDBOX: TypedDocumentNode<
   ${SANDBOX_FIELDS}
   mutation DestroySandbox($id: ID!) {
     destroySandbox(id: $id) { ...SandboxFields }
+  }
+`;
+
+// Logs live behind the Railway API, not the DB, so they're fetched on demand for one
+// sandbox at a time rather than folded into SANDBOX_FIELDS — that fragment rides along
+// with GetSandboxes' 5s poll, and a live Railway call per row on every tick would be
+// wasteful (and slow) for a field almost never looked at.
+export const GET_SANDBOX_LOGS: TypedDocumentNode<
+  { sandbox: { id: string; logs: SandboxLog[] } | null },
+  { id: string }
+> = gql`
+  query GetSandboxLogs($id: ID!) {
+    sandbox(id: $id) {
+      id
+      logs { timestamp message severity }
+    }
   }
 `;

@@ -3,7 +3,7 @@
 // Ported from the design prototype, with mock fields swapped for real GraphQL data:
 // `remainingSeconds` became a computation over `expiresAt`, and the hardcoded lifecycle
 // became <Lifecycle/> reading real event rows.
-import { PiCaretDown, PiCopy, PiDotsThree, PiTrash } from 'react-icons/pi';
+import { PiCaretDown, PiCopy, PiTerminalWindow, PiTrash } from 'react-icons/pi';
 import type { Sandbox, SandboxStatus } from '../types';
 import { TemplateIcon } from './TemplateIcon';
 import { StatusBadge } from './StatusBadge';
@@ -29,10 +29,11 @@ interface SandboxRowProps {
   destroying: boolean;
   onToggle: () => void;
   onDestroy: (id: string) => void;
+  onViewLogs: (id: string) => void;
 }
 
 export function SandboxRow({
-  sandbox, now, expanded, destroying, onToggle, onDestroy,
+  sandbox, now, expanded, destroying, onToggle, onDestroy, onViewLogs,
 }: SandboxRowProps) {
   const isAlive = ALIVE.includes(sandbox.status);
 
@@ -81,12 +82,6 @@ export function SandboxRow({
           <strong>{formatDuration(remaining)}</strong>
           <small>{TTL_LABELS[sandbox.status]}</small>
         </span>
-
-        <span className="row-actions-cell" onClick={(event) => event.stopPropagation()}>
-          <button className="icon-button" type="button" aria-label="More actions">
-            <PiDotsThree size={22} />
-          </button>
-        </span>
       </div>
 
       {expanded ? (
@@ -114,19 +109,31 @@ export function SandboxRow({
             <Lifecycle sandbox={sandbox} />
           </div>
 
-          {isAlive ? (
+          <div className="details-actions">
             <button
-              className="destroy-button"
+              className="logs-button"
               type="button"
-              disabled={destroying}
-              onClick={() => {
-                if (confirm(`Destroy ${sandbox.name}?`)) onDestroy(sandbox.id);
-              }}
+              disabled={!sandbox.railwayServiceId}
+              onClick={() => onViewLogs(sandbox.id)}
             >
-              <PiTrash size={18} />
-              {destroying ? 'Destroying...' : 'Destroy now'}
+              <PiTerminalWindow size={18} />
+              View logs
             </button>
-          ) : null}
+
+            {isAlive ? (
+              <button
+                className="destroy-button"
+                type="button"
+                disabled={destroying}
+                onClick={() => {
+                  if (confirm(`Destroy ${sandbox.name}?`)) onDestroy(sandbox.id);
+                }}
+              >
+                <PiTrash size={18} />
+                {destroying ? 'Destroying...' : 'Destroy now'}
+              </button>
+            ) : null}
+          </div>
         </div>
       ) : null}
     </article>

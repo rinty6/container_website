@@ -11,7 +11,7 @@ function GuideContent() {
     <>
       <h3>What is a sandbox?</h3>
       <p>
-        A sandbox is a real container running a real Docker image on Railway. It cab be a throwaway
+        A sandbox is a real container running a real Docker image on Railway. It can be a throwaway
         Postgres, Redis, or web server you can actually connect to. It is not a simulation.
       </p>
 
@@ -45,14 +45,11 @@ function FeedbackContent() {
   return (
     <>
       <p>
-        This panel is a deliberate placeholder. It has no form and sends nothing — a fake form
-        that silently discarded your input would be worse than an honest gap.
+        In future, this will be a form which allows users to send messages and feedback whenever they have bugs
       </p>
       <p>
-        It exists to show the shell is ready for it: this panel, the Guide, Profile, Import
-        image, and the per-sandbox Logs viewer are all the same <code>Modal</code> component
-        with different content. Adding a real feedback feature means writing its body and a
-        mutation — no changes to the navigation or overlay behaviour.
+        It exists to show the shell is ready for it: this panel, the Guide, Profile, Import image, 
+        and the per-sandbox Logs viewer are all the same Modal component with different content.
       </p>
     </>
   );
@@ -62,13 +59,7 @@ function ProfileContent() {
   return (
     <>
       <p>
-        Also a deliberate placeholder. easydevelop is currently single-operator: there are no
-        accounts, so there is nothing real to show here yet.
-      </p>
-      <p>
-        Multi-user support is an explicit non-goal for v1. Adding it would mean an owner column
-        on the sandbox table, auth on the API, and per-user filtering — a real piece of work, not
-        a UI change. This panel marks where it would live.
+        In future, this section allows users to view their account details
       </p>
     </>
   );
@@ -78,14 +69,13 @@ function ImportContent() {
   return (
     <>
       <p>
-        Planned, not built. Today the catalog is four curated images; this is where you would
-        paste any public Docker image instead.
+        This section allows users to upload/paste any public Docker image
       </p>
       <p>
-        The backend is already most of the way there — <code>spinUp()</code> takes an arbitrary
+        Plan: The backend is already most of the way there — <code>spinUp()</code> takes an arbitrary
         image string, which is exactly how the presets work. What is missing is the part that
         matters: validating untrusted input, and deciding what limits apply when anyone can run
-        anything. That is a security question, not a form field, which is why it is not shipped.
+        anything.
       </p>
     </>
   );

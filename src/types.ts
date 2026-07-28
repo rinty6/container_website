@@ -23,6 +23,12 @@ export interface SandboxEvent {
   timestamp: string;
 }
 
+export interface SandboxLog {
+  timestamp: string;
+  message: string;
+  severity: string;
+}
+
 export interface Sandbox {
   id: string;
   name: string;
