@@ -8,7 +8,6 @@ export interface Template {
     description: string | null; 
 };
 
-
 export type SandboxStatus =
   | 'REQUESTED'
   | 'PROVISIONING'
@@ -34,3 +33,5 @@ export interface Sandbox {
   expiresAt: string;
   events: SandboxEvent[];
 }
+
+export type PanelId = 'guide' | 'feedback' | 'profile' | 'import';

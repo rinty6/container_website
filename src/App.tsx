@@ -2,15 +2,15 @@
 // Owns all data fetching and the page-level UI state; child components stay presentational.
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client/react';
-import {
-  PiArrowRight, PiArrowsClockwise, PiCube, PiPlus, PiRocketLaunch, PiSquaresFour,
-} from 'react-icons/pi';
+import { PiArrowsClockwise, PiPlay, PiUploadSimple } from 'react-icons/pi';
 import { GET_TEMPLATES, GET_SANDBOXES, CREATE_SANDBOX, DESTROY_SANDBOX } from './queries';
 import { SandboxRow } from './components/SandboxRow';
 import { TemplateIcon } from './components/TemplateIcon';
+import { Sidebar } from './components/Sidebar';
+import { PanelHost } from './components/PanelHost';
 import { useNow } from './useNow';
 import { formatDateTime } from './format';
-import type { SandboxStatus } from './types';
+import type { SandboxStatus, PanelId } from './types';
 
 const TTL_OPTIONS = [
   { label: '15m', minutes: 15 },
@@ -21,11 +21,11 @@ const TTL_OPTIONS = [
 const ALIVE: SandboxStatus[] = ['REQUESTED', 'PROVISIONING', 'RUNNING'];
 
 function App() {
-  const [activeNav, setActiveNav] = useState('sandboxes');
   const [selectedTemplate, setSelectedTemplate] = useState('postgres');
   const [selectedTtl, setSelectedTtl] = useState(60);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [lastSynced, setLastSynced] = useState(() => new Date().toISOString());
+  const [activePanel, setActivePanel] = useState<PanelId | null>(null);
 
   const now = useNow();
 
@@ -52,45 +52,17 @@ function App() {
     [sandboxes],
   );
 
+  // Names the launch button after what it will actually launch — "Launch Redis", not the
+  // generic "Launch sandbox". Falls back while the templates query is still in flight.
+  const selectedName = templates.find((t) => t.id === selectedTemplate)?.name ?? 'sandbox';
+
   return (
     <div className="app-shell">
-      <aside className="sidebar">
-        <div className="brand">
-          <span className="brand-mark"><PiCube size={31} /></span>
-          <span>easydevelop</span>
-        </div>
-
-        <nav className="primary-nav" aria-label="Primary navigation">
-          <button
-            className={activeNav === 'sandboxes' ? 'active' : ''}
-            type="button"
-            onClick={() => setActiveNav('sandboxes')}
-          >
-            <PiCube size={20} />
-            Sandboxes
-          </button>
-          <button
-            className={activeNav === 'templates' ? 'active' : ''}
-            type="button"
-            onClick={() => {
-              setActiveNav('templates');
-              document.querySelector('.launcher')?.scrollIntoView({ behavior: 'smooth' });
-            }}
-          >
-            <PiSquaresFour size={20} />
-            Templates
-          </button>
-        </nav>
-
-        {/* "Connected" is an honest signal: it reflects whether the last poll succeeded. */}
-        <div className="railway-status">
-          <span className="railway-icon"><PiRocketLaunch size={19} /></span>
-          <span>
-            <strong>Railway</strong>
-            <small><i /> {error ? 'Disconnected' : 'Connected'}</small>
-          </span>
-        </div>
-      </aside>
+      <Sidebar
+        activePanel={activePanel}
+        onSelectPanel={setActivePanel}
+        connected={!error}
+      />
 
       <main className="workspace">
         <header className="topbar">
@@ -110,13 +82,10 @@ function App() {
           <button
             className="primary-button"
             type="button"
-            disabled={creating}
-            onClick={() =>
-              createSandbox({ variables: { templateId: selectedTemplate, ttlMinutes: selectedTtl } })
-            }
+            onClick={() => setActivePanel('import')}
           >
-            <PiPlus size={21} />
-            {creating ? 'Launching...' : 'Launch sandbox'}
+            <PiUploadSimple size={21} />
+            Import image
           </button>
         </header>
 
@@ -147,7 +116,7 @@ function App() {
             </div>
 
             <div className="ttl-picker">
-              <span>Default TTL</span>
+              <span>Lifetime</span>
               <div role="radiogroup" aria-label="Time to live">
                 {TTL_OPTIONS.map((option) => (
                   <button
@@ -162,6 +131,17 @@ function App() {
                   </button>
                 ))}
               </div>
+              <button
+                className="launch-button"
+                type="button"
+                disabled={creating}
+                onClick={() =>
+                  createSandbox({ variables: { templateId: selectedTemplate, ttlMinutes: selectedTtl } })
+                }
+              >
+                <PiPlay size={18} />
+                {creating ? 'Launching...' : `Launch ${selectedName}`}
+              </button>
             </div>
           </div>
         </section>
@@ -184,41 +164,31 @@ function App() {
           </div>
 
           <div className="sandbox-list">
-            {sandboxes.map((sandbox) => (
-              <SandboxRow
-                key={sandbox.id}
-                sandbox={sandbox}
-                now={now}
-                expanded={expandedId === sandbox.id}
-                destroying={destroying}
-                onToggle={() =>
-                  setExpandedId((current) => (current === sandbox.id ? null : sandbox.id))
-                }
-                onDestroy={(id) => destroySandbox({ variables: { id } })}
-              />
-            ))}
-          </div>
-
-          <div className="empty-state">
-            <PiCube size={30} />
-            <span>
-              <strong>
-                {sandboxes.length === 0 ? 'No sandboxes yet' : 'No more live environments'}
-              </strong>
-              <small>Launch a fresh sandbox when you need one.</small>
-            </span>
-            <button
-              type="button"
-              disabled={creating}
-              onClick={() =>
-                createSandbox({ variables: { templateId: selectedTemplate, ttlMinutes: selectedTtl } })
-              }
-            >
-              Launch sandbox <PiArrowRight />
-            </button>
+            {/* The empty state lives inside the table so the layout stays put rather than
+                collapsing to a blank area. `!loading` avoids flashing it on first paint. */}
+            {sandboxes.length === 0 && !loading ? (
+              <p className="empty-row">No sandboxes yet — pick a preset above and press Launch.</p>
+            ) : (
+              sandboxes.map((sandbox) => (
+                <SandboxRow
+                  key={sandbox.id}
+                  sandbox={sandbox}
+                  now={now}
+                  expanded={expandedId === sandbox.id}
+                  destroying={destroying}
+                  onToggle={() =>
+                    setExpandedId((current) => (current === sandbox.id ? null : sandbox.id))
+                  }
+                  onDestroy={(id) => destroySandbox({ variables: { id } })}
+                />
+              ))
+            )}
           </div>
         </section>
       </main>
+
+      {/* One host for every overlay panel; App only tracks which one is open. */}
+      <PanelHost panel={activePanel} onClose={() => setActivePanel(null)} />
     </div>
   );
 }

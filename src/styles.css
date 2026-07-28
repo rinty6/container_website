@@ -936,6 +936,7 @@ h2 {
     font-size: 0;
   }
 
+
   .template-options {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1023,4 +1024,102 @@ h2 {
   .lifecycle-line {
     display: none;
   }
+}
+
+/* ── Overlay panels (Guide / Feedback / Profile / Import / Logs) ──────────────
+   These MUST stay outside every @media block: the modal is used at all widths.
+   (They were briefly nested inside the max-width:760px query, which silently
+   disabled the backdrop on desktop.) */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 7, 10, 0.72);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 50;
+}
+
+.modal-panel {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  width: min(680px, 100%);
+  max-height: min(80vh, 720px);
+  display: flex;
+  flex-direction: column;
+  outline: none;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.modal-body {
+  padding: 22px;
+  overflow-y: auto;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.modal-body h3 {
+  color: var(--text);
+  font-size: 14px;
+  margin: 20px 0 8px;
+}
+
+.modal-body h3:first-child { margin-top: 0; }
+.modal-body p { margin: 0 0 12px; }
+
+.modal-body code {
+  background: var(--surface-soft);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 12.5px;
+}
+
+/* ── Launch button, now living beside the lifetime picker ─────────────────── */
+
+.launch-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 14px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 9px;
+  background: var(--violet);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.launch-button:hover:not(:disabled) { filter: brightness(1.08); }
+.launch-button:disabled { opacity: 0.55; cursor: default; }
+
+/* ── Inline empty state, replacing the old bottom block ───────────────────── */
+
+.empty-row {
+  padding: 34px 20px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13.5px;
+  margin: 0;
 }
